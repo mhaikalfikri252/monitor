@@ -4,6 +4,14 @@
 <head>
     <style>
         .dot-safe {
+            height: 20px;
+            width: 20px;
+            background-color: #46f33a;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .dot-normal {
             height: 25px;
             width: 25px;
             background-color: #46f33a;
@@ -74,7 +82,7 @@
                     } else if (suhu >= 29 && suhu < 30) {
                         document.getElementById("indikator").textContent = "Suhu : " + suhu.toString() + " (NORMAL)";
                         document.getElementById("indikator").className = "alert alert-success";
-                        document.getElementById("dot").className = "dot-safe";
+                        document.getElementById("dot").className = "dot-normal";
                     } else if (suhu >= 30 && suhu < 31) {
                         document.getElementById("indikator").textContent = "Suhu : " + suhu.toString() + " (PANAS)";
                         document.getElementById("indikator").className = "alert alert-warning";
