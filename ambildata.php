@@ -37,7 +37,7 @@ $host   = "riset.revolusi-it.com";
 $port     = 1883;
 $username = "TP-Link_60DA";
 $password = "h1ced3948b5";
-$topic = "iot/suhu";
+$topic = "iot/G_241_21_0007";
 
 $mqtt = new bluerhinos\phpMQTT($host, $port, "G.241.21.0007" . rand());
 
