@@ -12,14 +12,9 @@ const char* ssid = "TP-Link_60DA";
 const char* password = "h1ced3948b5";
 const char* mqtt_server = "riset.revolusi-it.com";
 
-const char* topik = "iot/suhu";
+const char* topik = "iot/G_241_21_0007";
 
 String messages_terima, messages_kirim;
-
-int led1 = D1;
-int led2 = D2;
-int led3 = D3;
-int led4 = D4;
 
 int sensor = A0;
 float nilai_analog, nilai_volt, nilai_suhu;
@@ -38,19 +33,19 @@ WiFi.begin(ssid, password);
 void reconnect() {
   // Loop until we're reconnected
   while (!client.connected()) {
-  Serial.print("Menghubungkan diri ke MQTT Server : "+(String)mqtt_server);
-  // Attempt to connect
-  if (client.connect("G.241.21.0007")) {
-    Serial.println("connected");
-    // ... and subscribe to topic
-    client.subscribe(topik);
-  } else {
-    Serial.print("failed, rc=");
-    Serial.print(client.state());
-    Serial.println(" coba lagi dalam 5 detik...");
-    // Wait 5 seconds before retrying
-    delay(5000);
-  }
+    Serial.print("Menghubungkan diri ke MQTT Server : "+(String)mqtt_server);
+    // Attempt to connect
+    if (client.connect("G.241.21.0007")) {
+      Serial.println("connected");
+      // ... and subscribe to topic
+      client.subscribe(topik);
+    } else {
+      Serial.print("failed, rc=");
+      Serial.print(client.state());
+      Serial.println(" coba lagi dalam 5 detik...");
+      // Wait 5 seconds before retrying
+      delay(5000);
+    }
   }
 }
 
@@ -64,31 +59,50 @@ float baca_suhu() {
   Serial.println("Suhu = " + (String)nilai_suhu + " Celcius");
 
   return nilai_suhu;
+
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
-Serial.print("Pesan dari MQTT [");
-Serial.print(topic);
-Serial.print("] ");
-messages_terima="";
-// String name=" MHF";
+  Serial.print("Pesan dari MQTT [");
+  Serial.print(topic);
+  Serial.print("] ");
+  messages_terima="";
 
-for (int i=0;i<length;i++) { // susun jadi string saja...
-  char receivedChar = (char)payload[i];
-  messages_terima = messages_terima + (char)payload[i]; // ambil pesannya masukkan dalam string
+  for (int i=0;i<length;i++) { // susun jadi string saja...
+    char receivedChar = (char)payload[i];
+    messages_terima = messages_terima + (char)payload[i]; // ambil pesannya masukkan dalam string
+    }
+    Serial.println(messages_terima);
+
+  float suhu = baca_suhu();
+  // kirim pesan ke mqtt server
+  messages_kirim=(String)suhu;
+
+  if (suhu < 29) {
+    digitalWrite(D1, 0);
+    digitalWrite(D2, 0);
+    digitalWrite(D3, 0);
+  } else if (suhu >= 29 && suhu < 30) {
+    digitalWrite(D1, 1);
+    digitalWrite(D2, 0);
+    digitalWrite(D3, 0);
+  } else if (suhu >= 30 && suhu < 31) {
+    digitalWrite(D1, 1);
+    digitalWrite(D2, 1);
+    digitalWrite(D3, 0);
+  } else if (suhu >= 31) {
+    digitalWrite(D1, 1);
+    digitalWrite(D2, 1);
+    digitalWrite(D3, 1);
   }
-  Serial.println(messages_terima);
 
-float suhu = baca_suhu();
-// kirim pesan ke mqtt server
-messages_kirim=(String)suhu;
-// Serial.println(messages2);
-// perhatikan cara ngirim variabel string lewat client.publish ini gak bisa langsung...
-char attributes[100];
-messages_kirim.toCharArray(attributes, 100);
-client.publish(topik,attributes,true);
-Serial.println("messages : "+messages_kirim+" terkirim...");
-delay(3000);
+  // perhatikan cara ngirim variabel string lewat client.publish ini gak bisa langsung...
+  char attributes[100];
+  messages_kirim.toCharArray(attributes, 100);
+  client.publish(topik,attributes,true);
+  Serial.println("messages : "+messages_kirim+" terkirim...");
+  delay(3000);
+
 }
 
 void setup() {
@@ -98,15 +112,10 @@ void setup() {
   client.setCallback(callback);
 
   pinMode(sensor, INPUT);
-  pinMode(led1, OUTPUT);
-  pinMode(led2, OUTPUT);
-  pinMode(led3, OUTPUT);
-  pinMode(led4, OUTPUT);
+  pinMode(D1, OUTPUT);
+  pinMode(D2, OUTPUT);
+  pinMode(D3, OUTPUT);
 
-  digitalWrite(led1, 0);
-  digitalWrite(led2, 0);
-  digitalWrite(led3, 0);
-  digitalWrite(led4, 0);
 }
 
 void loop() {
@@ -115,4 +124,5 @@ void loop() {
   if (!client.connected()) { reconnect(); } // reconnect apabila belum konek
 
   client.loop();
+
 }
